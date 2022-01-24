@@ -24,9 +24,12 @@ const Header = (props) => {
 }
 
 const BestAnecdote = (props) => {
+  const best = Math.max(...props.votes)
+  const index = props.votes.indexOf(best) 
   return (
     <>
-      1
+      <p>{props.anecdotes[index]} </p> 
+      <p>has {best} votes</p>
     </>
   )
 }
@@ -42,27 +45,21 @@ const App = (props) => {
     'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.',
     'Programming without an extremely heavy use of console.log is same as if a doctor would refuse to use x-rays or blood tests when dianosing patients.'
   ]
-  const [votes, setVotes]= useState({
-    votes: new Uint8Array(anecdotes.length)
-  })
-
-  const [selected, setSelected] = useState({
-    selected: 0
-  })
+  const [votes, setVotes]= useState(new Uint8Array(anecdotes.length))
+  const [selected, setSelected] = useState(0)
 
   const handleVoteClick = (props) => {
-    const copy = [{...votes}]
-    copy[1] += 1
+    const copy = [...votes]
+    copy[selected] += 1
     console.log('vote', copy)
 
-    setVotes({...copy, votes: copy })
+    setVotes( copy )
     console.log(selected)
     console.log('vote', copy)
-
   }
   
   const handleNextClick = () => {
-    setSelected({...selected, selected: (Math.floor(Math.random() * anecdotes.length))})
+    setSelected(Math.floor(Math.random() * anecdotes.length))
     console.log(selected)
   }
 
@@ -71,9 +68,9 @@ const App = (props) => {
       <Header text = 'Anecdote of the day'/>
       <Button handleClick = {handleVoteClick} text = 'vote' Button/>
       <Button handleClick = {handleNextClick} text = 'next anecdote' Button/>
-      <Anecdote anecdotes={anecdotes} selected={selected.selected}/>
+      <Anecdote anecdotes={anecdotes} selected={selected}/>
       <Header text = 'Anecdote with most votes'/>
-      <BestAnecdote />
+      <BestAnecdote votes = {votes} anecdotes = {anecdotes}/>
     </div>
   )
 }
