@@ -1,12 +1,22 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 import Person from './components/Person'
+import personService from './services/persons'
+
 
 const Filter = (props) => {
   return (
     <form>
       <h2>Numbers</h2>
       {props.personsToShow.map(person => 
-      person.name.toLowerCase().includes(props.newFilter.toLowerCase()) ? <Person key = { person.name } person={ person } /> : null)}
+      person.name.toLowerCase().includes(props.newFilter.toLowerCase()) 
+      ? <div key={ person.name }>
+        <Person key = { person.name } person={ person } />
+        <button onClick={() => props.handleClick({ person })}> delete </button>  
+        </div> 
+        : null)
+      }
+      
    </form>
   )
 }
@@ -32,39 +42,56 @@ const AddPerson = (props) => {
 }
 
 const App = (props) => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456' },
-    { name: 'Ada Lovelace', number: '39-44-5323523' },
-    { name: 'Dan Abramov', number: '12-43-234345' },
-    { name: 'Mary Poppendieck', number: '39-23-6423122' }
-  ]) 
+  const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
   const [showAll, setShowAll] = useState(true)
+  const [errorMessage, setErrorMessage] = useState()
+  const hook = () => {
+    console.log('effect')
+    personService
+      .getAll()
+      .then(response => {
+        setPersons(response.data)
+      })
+  }
+  
+  useEffect(() => hook(), [])
 
   const addPerson = (event) => {
     event.preventDefault()
     let found = false
     persons.forEach(person => {
-      if (person.name == newName){
+      if (person.name === newName){
         found = true
-        window.alert({newName}, " is already added to phonebook")
-   
+        const accepted = window.confirm(`${newName}, is already added to phonebook, replace the old number with a new one?`)
+        if (accepted){
+          const personObject = {
+            name: newName,
+            number: newNumber
+          }
+          personService
+            .update(person.id, personObject)
+            .then(() => hook())
+         
+        }
+      
       }
-    })
-   
-    if (found == false){
+    })  
+    if (found === false){  
       const personObject = {
         name: newName,
-        number: newNumber,
-        id: persons.length +1
+        number: newNumber
       }
-      setPersons(persons.concat(personObject))
-      setNewName('')
-      setNewNumber('')
+      personService
+        .create(personObject)
+        .then(response => {
+          setPersons(persons.concat(response.data))
+          setNewName('')
+          setNewNumber('')
+        })
     }
-    
   }
 
   const handlePersonChange = (event) => {
@@ -77,14 +104,27 @@ const App = (props) => {
 
   const handleFilterChange = (event) => {
     event.preventDefault()
+
     setNewFilter(event.target.value)
+  }
+
+  const handleClick = ({person}) => {
+    console.log(person)
+    const accepted = window.confirm(`Delete ${person.name}`)
+    
+    if (accepted) {
+      personService
+        .remove(person.id)
+    } else {
+        console.log("ASD")
+    }
+
   }
 
   const personsToShow = showAll
     ? persons
     : persons.filter(person => person.name.toLowerCase.includes(newFilter.toLowerCase) === true)
   
-
   return (
     <div>
       <h2>Phonebook</h2>
@@ -92,11 +132,10 @@ const App = (props) => {
         value={newFilter}
         onChange={handleFilterChange}/>
       <ul>
-      <form onSubmit={addPerson}>
-        <AddPerson newName={newName} handlePersonChange={handlePersonChange} newFilter={newNumber} handleNumberChange={handleNumberChange}/>
-     </form>   
-        
-        <Filter personsToShow ={personsToShow} newFilter={newFilter}/>
+        <form onSubmit={addPerson}>
+          <AddPerson newName={newName} handlePersonChange={handlePersonChange} newFilter={newNumber} handleNumberChange={handleNumberChange}/>
+        </form>   
+        <Filter personsToShow ={personsToShow} newFilter={newFilter} handleClick={handleClick}/> 
       </ul>  
     </div>
   )
