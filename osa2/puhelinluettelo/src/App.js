@@ -87,7 +87,7 @@ const App = (props) => {
       }) 
     }
     
-   
+   const tmpPersonList = personsList || []
     if (found === false){  
       const personObject = {
         name: newName,
@@ -96,7 +96,7 @@ const App = (props) => {
       personService
         .create(personObject)
         .then(response => {
-          setPersons(personsList.concat(response.data))
+          setPersons(tmpPersonList.concat(response.data))
           setNewName('')
           setNewNumber('')
         })
