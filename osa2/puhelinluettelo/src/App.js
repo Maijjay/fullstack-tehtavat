@@ -5,10 +5,13 @@ import personService from './services/persons'
 
 
 const Filter = (props) => {
+  if (!props.personsToShow){
+    return null    
+  }
   return (
     <form>
-      <h2>Numbers</h2>
-      {props.personsToShow.map(person => 
+    <h2>Numbers</h2>
+    {props.personsToShow.map(person => 
       person.name.toLowerCase().includes(props.newFilter.toLowerCase()) 
       ? <div key={ person.name }>
         <Person key = { person.name } person={ person } />
@@ -16,9 +19,10 @@ const Filter = (props) => {
         </div> 
         : null)
       }
-      
-   </form>
-  )
+  </form>
+  )  
+  
+  
 }
 
 const AddPerson = (props) => {
@@ -42,7 +46,7 @@ const AddPerson = (props) => {
 }
 
 const App = (props) => {
-  const [persons, setPersons] = useState([])
+  const [personsList, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
@@ -62,23 +66,28 @@ const App = (props) => {
   const addPerson = (event) => {
     event.preventDefault()
     let found = false
-    persons.forEach(person => {
-      if (person.name === newName){
-        found = true
-        const accepted = window.confirm(`${newName}, is already added to phonebook, replace the old number with a new one?`)
-        if (accepted){
-          const personObject = {
-            name: newName,
-            number: newNumber
-          }
-          personService
-            .update(person.id, personObject)
-            .then(() => hook())
-         
+    if (!personsList){
+      setPersons([])
+      console.log('no persons')
+    } else {
+      personsList.map(person => {
+        if (person.name === newName){
+          found = true
+          const accepted = window.confirm(`${newName}, is already added to phonebook, replace the old number with a new one?`)
+          if (accepted){
+            const personObject = {
+              name: newName,
+              number: newNumber
+            }
+            personService
+              .update(person.id, personObject)
+              .then(() => hook())
+          }  
         }
-      
-      }
-    })  
+      }) 
+    }
+    
+   
     if (found === false){  
       const personObject = {
         name: newName,
@@ -87,7 +96,7 @@ const App = (props) => {
       personService
         .create(personObject)
         .then(response => {
-          setPersons(persons.concat(response.data))
+          setPersons(personsList.concat(response.data))
           setNewName('')
           setNewNumber('')
         })
@@ -118,12 +127,11 @@ const App = (props) => {
     } else {
         console.log("ASD")
     }
-
   }
 
   const personsToShow = showAll
-    ? persons
-    : persons.filter(person => person.name.toLowerCase.includes(newFilter.toLowerCase) === true)
+    ? personsList
+    : personsList.filter(person => person.name.toLowerCase.includes(newFilter.toLowerCase) === true)
   
   return (
     <div>
