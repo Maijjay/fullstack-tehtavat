@@ -45,6 +45,8 @@ const AddPerson = (props) => {
   )
 }
 
+
+
 const App = (props) => {
   const [personsList, setPersons] = useState([])
   const [newName, setNewName] = useState('')
@@ -63,13 +65,20 @@ const App = (props) => {
   
   useEffect(() => hook(), [])
 
+  const notify = (message) => {
+    setErrorMessage(message)
+    setTimeout(() => {
+      setErrorMessage("")
+    }, 3000)
+  }
+
   const addPerson = (event) => {
     event.preventDefault()
     let found = false
     if (!personsList){
       setPersons([])
       console.log('no persons')
-    } else {
+    } else {
       personsList.map(person => {
         if (person.name === newName){
           found = true
@@ -100,6 +109,14 @@ const App = (props) => {
           setNewName('')
           setNewNumber('')
         })
+        .catch(error => {
+          notify(error.response.data.error)
+          /*
+          notify(errorMessage)
+          console.log(error.response.data.error)
+          */
+         
+        })
     }
   }
 
@@ -115,6 +132,10 @@ const App = (props) => {
     event.preventDefault()
 
     setNewFilter(event.target.value)
+  }
+
+  const handleErrorChange = (event) => {
+    setErrorMessage(event.target.value)
   }
 
   const handleClick = ({person}) => {
@@ -136,12 +157,13 @@ const App = (props) => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <p> { errorMessage } </p>
       filter shown with <input
         value={newFilter}
         onChange={handleFilterChange}/>
       <ul>
         <form onSubmit={addPerson}>
-          <AddPerson newName={newName} handlePersonChange={handlePersonChange} newFilter={newNumber} handleNumberChange={handleNumberChange}/>
+          <AddPerson newName={newName} handlePersonChange={handlePersonChange} newNumber={newNumber} handleNumberChange={handleNumberChange}/>
         </form>   
         <Filter personsToShow ={personsToShow} newFilter={newFilter} handleClick={handleClick}/> 
       </ul>  
