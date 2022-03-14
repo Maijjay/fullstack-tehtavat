@@ -24,7 +24,7 @@ const Footer = () => {
 const App = () => {
   const nimi = 'Pekka'
   const ika = 15
-  
+  const [a, setA] = useState("asd")
   return (
     <>
       <h1>Greetings</h1>
